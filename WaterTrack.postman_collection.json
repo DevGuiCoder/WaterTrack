@@ -1,0 +1,203 @@
+{
+	"info": {
+		"_postman_id": "d95ddf26-8ff5-4f01-99f8-40549a792b17",
+		"name": "WaterTrack",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40985146"
+	},
+	"item": [
+		{
+			"name": "Usuários",
+			"item": [
+				{
+					"name": "Criar Usuário",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"João Silva\",\r\n  \"email\": \"joao.silva@email.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "**POST /api/usuarios — Criar usuário**\n\n**Request**  \nURL: /api/usuarios\n\n**Method: POST**\n\n**Headers:**  \nContent-Type: application/json\n\n**Body (JSON):**  \n{  \n\"nome\": \"João Silva\",  \n\"email\": \"[joao.silva@email.com](https://mailto:joao.silva@email.com)\"  \n}\n\n**Responses**  \n**201 Created (usuário criado)**  \n{  \n\"id\": 1,  \n\"nome\": \"João Silva\",  \n\"email\": \"[joao.silva@email.com](https://mailto:joao.silva@email.com)\"  \n}\n\n**400 Bad Request (email vazio)**  \n\"Email não pode ser vazio\"\n\n**400 Bad Request (nome vazio)**  \n\"Nome não pode ser vazio\"\n\n**409 Conflict (email já cadastrado)**  \n\"E-mail já cadastrado.\"\n\n**500 Internal Server Error (erro no servidor)**  \n\"Erro ao cadastrar usuário.\""
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Usuário por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						},
+						"description": "**2\\. GET /api/usuarios/{id} — Buscar usuário por ID**  \n  \n**Request**  \nURL: /api/usuarios/1  \n  \n**Method: GET**  \n  \n**Responses  \n200 OK**  \n{  \n\"id\": 1,  \n\"nome\": \"João Silva\",  \n\"email\": \"joao.silva@email.com\"  \n}  \n  \n**404 Not Found (usuário não encontrado)**  \nResposta vazia"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Usuário por Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/usuarios/buscar?email=joao.silva@email.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"usuarios",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "joao.silva@email.com"
+								}
+							]
+						},
+						"description": "**3\\. GET /api/usuarios/buscar?email=xxx — Buscar usuário** por email  \n  \n**Request**  \nURL: /api/usuarios/buscar?email=joao.silva@email.com  \n  \n**Method: GET  \n**  \n**Responses  \n200 OK**  \n{  \n\"id\": 1,  \n\"nome\": \"João Silva\",  \n\"email\": \"joao.silva@email.com\"  \n}  \n  \n**404 Not Found (email não encontrado)**  \nResposta vazia."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints voltados para cadastro e consulta de usuários."
+		},
+		{
+			"name": "Consumo Água",
+			"item": [
+				{
+					"name": "Quantidade de Água Consumida",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/consumo/1?quantidade=1000",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"consumo",
+								"1"
+							],
+							"query": [
+								{
+									"key": "quantidade",
+									"value": "1000"
+								}
+							]
+						},
+						"description": "**1\\. POST /api/consumo/{usuarioId} — Registrar consumo de água**  \n  \n**Request**  \nURL: /api/consumo/1  \nMethod: POST  \n  \n**Headers:**  \nContent-Type: application/json  \n  \n**Query Params:**  \nquantidade=500  \n  \n**Exemplo:**  \nPOST /api/consumo/1?quantidade=500  \n  \n**Responses  \n  \n201 Created (Consumo registrado)**  \n{  \n\"id\": 10,  \n\"usuarioId\": 1,  \n\"quantidade\": 500,  \n\"dataHora\": \"2025-05-29T14:23:10\"  \n}  \n  \n**400 Bad Request (quantidade inválida)**  \n\"Quantidade deve ser maior que zero.\"  \n  \n**500 Internal Server Error (erro interno)**  \n\"Erro ao registrar consumo.\""
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Consumo de Água",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/consumo/1/total",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"consumo",
+								"1",
+								"total"
+							]
+						},
+						"description": "**3\\. GET /api/consumo/{usuarioId}/total — Total consumido por usuário**\n\n**Request**  \nURL: /api/consumo/1/total  \nMethod: GET\n\n**Exemplo:**  \nGET /api/consumo/1/total\n\n**Responses****200 OK**  \n1300\n\n**500 Internal Server Error**  \n\"Erro ao calcular total consumido.\""
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints voltados para a função de consumo de água."
+		},
+		{
+			"name": "Firebase",
+			"item": [
+				{
+					"name": "Cria Usuário no Firebase",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/auth/create-user?email=usuario@email.com&password=senhaSegura123",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"create-user"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario@email.com"
+								},
+								{
+									"key": "password",
+									"value": "senhaSegura123"
+								}
+							]
+						},
+						"description": "**2\\. POST /api/auth/create-user — Criar usuário no Firebase  \n**  \n**Request**  \nURL: /api/auth/create-user  \n  \n**Method: POST**  \n  \n**Query Parameters:**  \nemail=usuario@email.com  \npassword=senhaSegura123  \n  \n**Exemplo:**  \nPOST /api/auth/create-user?email=joao@email.com&password=senha123  \n  \n**Responses  \n  \n200 OK (Usuário criado com sucesso)**  \n\"Usuário criado com UID: UID_EXEMPLO\"  \n  \n**400 Bad Request (Email ou senha inválidos)**  \n\"FirebaseAuthException: The email address is badly formatted.\"  \n  \n**409 Conflict (Email já está em uso)**  \n\"FirebaseAuthException: The email address is already in use by another account.\"  \n  \n**500 Internal Server Error (Erro ao criar usuário)**  \n\"Erro interno ao criar usuário\"."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints voltados para autenticação de sessão no firebase."
+		}
+	]
+}
