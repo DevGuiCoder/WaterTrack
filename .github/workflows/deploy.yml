@@ -1,0 +1,49 @@
+name: Deploy Pipeline
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm test  # Executa seus testes existentes
+
+  deploy_firebase:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Só executa no branch main
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build  # Se seu projeto precisar de build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: 'watertrack-e0dfa'  
+          channelId: 'live'
+
+  deploy_docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login no Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: 'seu-usuario-dockerhub/nome-da-imagem:latest'
