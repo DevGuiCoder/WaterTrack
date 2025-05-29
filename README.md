@@ -12,6 +12,7 @@ Projeto para registrar e acompanhar a hidratação
 ## Introdução
 💧 A meta diária de consumo de água é essencial para ajudar os usuários a manterem-se saudáveis e hidratados. Esta solução descreve como implementar a funcionalidade para que os usuários possam definir e gravar suas metas diárias de consumo de água.💧 
 
+![image](https://github.com/user-attachments/assets/07faa64a-5762-4b06-8def-5dd5c8fb79c2)
 
 
 
