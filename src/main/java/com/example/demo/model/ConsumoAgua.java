@@ -74,6 +74,16 @@ public class ConsumoAgua {
         this.dataHora = dataHora;
     }
 
+    /**
+     * Define dataHora automaticamente antes de salvar, se estiver null.
+     */
+    @PrePersist
+    public void prePersist() {
+        if (dataHora == null) {
+            dataHora = LocalDateTime.now();
+        }
+    }
+
     // equals e hashCode baseados no ID
     @Override
     public boolean equals(Object o) {

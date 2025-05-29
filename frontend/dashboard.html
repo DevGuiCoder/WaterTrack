@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Controle de Consumo de Água</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 5px;
+        }
+        .success {
+            color: #2ecc71;
+            margin-top: 5px;
+        }
+        #user-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #eaf7fd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Controle de Consumo de Água</h1>
+    <div class="container">
+        <div class="panel">
+            <h2>Cadastrar Usuário</h2>
+            <form id="user-form">
+                <input type="text" id="nome" placeholder="Nome completo" required />
+                <input type="email" id="email" placeholder="E-mail" required />
+                <button type="submit">Cadastrar</button>
+                <div id="user-message" class="message"></div>
+            </form>
+
+            <h2>Buscar Usuário</h2>
+            <form id="search-form">
+                <input type="email" id="search-email" placeholder="Digite o e-mail" required />
+                <button type="submit">Buscar</button>
+            </form>
+
+            <div id="user-info" style="display: none;">
+                <h3>Informações do Usuário</h3>
+                <p><strong>Nome:</strong> <span id="info-nome"></span></p>
+                <p><strong>E-mail:</strong> <span id="info-email"></span></p>
+                <p><strong>ID:</strong> <span id="info-id"></span></p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Registrar Consumo</h2>
+            <form id="consumo-form">
+                <input type="number" id="usuario-id" placeholder="ID do usuário" required min="1" />
+                <input type="number" id="quantidade" placeholder="Quantidade (ml)" required min="1" />
+                <button type="submit">Registrar</button>
+                <div id="consumo-message" class="message"></div>
+            </form>
+
+            <h2>Histórico de Consumo</h2>
+            <form id="historico-form">
+                <input type="number" id="historico-id" placeholder="ID do usuário" required min="1" />
+                <button type="submit">Carregar Histórico</button>
+            </form>
+
+            <div id="total-consumo" style="margin-top: 20px; font-weight: bold;"></div>
+
+            <table id="historico-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Quantidade (ml)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+$(document).ready(function() {
+    const BASE_URL = 'http://127.0.0.1:8080';
+
+    // Cadastrar usuário
+    $('#user-form').submit(function(event) {
+        event.preventDefault(); // evita o reload da página
+
+        const nome = $('#nome').val();
+        const email = $('#email').val();
+
+        // Validação simples
+        if (!nome || !email) {
+            $('#user-message').removeClass('success').addClass('error').text('Por favor, preencha nome e e-mail.');
+            return;
+        }
+
+        $.ajax({
+            url: BASE_URL + '/api/usuarios',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ nome: nome, email: email }),
+            success: function(response) {
+                $('#user-message')
+                    .removeClass('error')
+                    .addClass('success')
+                    .text('Usuário cadastrado com sucesso! ID: ' + response.id);
+
+                // Salva o ID do usuário em um input hidden, se quiser usar depois
+                $('#usuario-id').val(response.id);
+
+                // Limpa os campos
+                $('#nome').val('');
+                $('#email').val('');
+            },
+            error: function(xhr) {
+                if (xhr.status === 409) {
+                    $('#user-message').removeClass('success').addClass('error').text('E-mail já cadastrado.');
+                } else {
+                    $('#user-message').removeClass('success').addClass('error').text('Erro ao cadastrar usuário.');
+                }
+            }
+        });
+    });
+
+    // Buscar usuário por e-mail
+    $('#search-form').submit(function(e) {
+        e.preventDefault();
+        const email = $('#search-email').val();
+
+        $.ajax({
+            url: BASE_URL + `/api/usuarios/buscar?email=${encodeURIComponent(email)}`,
+            type: 'GET',
+            success: function(response) {
+                if (response) {
+                    $('#info-nome').text(response.nome);
+                    $('#info-email').text(response.email);
+                    $('#info-id').text(response.id);
+                    $('#user-info').show();
+                    // Atualiza os campos de consumo e histórico
+                    $('#usuario-id').val(response.id);
+                    $('#historico-id').val(response.id);
+                } else {
+                    $('#user-info').hide();
+                    alert('Usuário não encontrado.');
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 404) {
+                    $('#user-info').hide();
+                    alert('Usuário não encontrado.');
+                } else {
+                    alert('Erro ao buscar usuário.');
+                }
+            }
+        });
+    });
+
+    // Registrar consumo
+    $('#consumo-form').submit(function(e) {
+        e.preventDefault();
+        const usuarioId = $('#usuario-id').val();
+        const quantidade = $('#quantidade').val();
+
+        $.ajax({
+            url: BASE_URL + `/api/consumo/${usuarioId}?quantidade=${quantidade}`,
+            type: 'POST',
+            success: function() {
+                $('#consumo-message').removeClass('error').addClass('success').text('Consumo registrado com sucesso!');
+                $('#quantidade').val('');
+                // Atualiza o histórico automaticamente
+                if ($('#historico-id').val() === usuarioId) {
+                    carregarHistorico(usuarioId);
+                }
+            },
+            error: function(xhr) {
+                let msg = 'Erro ao registrar consumo.';
+                if (xhr.responseText) msg = xhr.responseText;
+                $('#consumo-message').removeClass('success').addClass('error').text(msg);
+            }
+        });
+    });
+
+    // Carregar histórico
+    $('#historico-form').submit(function(e) {
+        e.preventDefault();
+        const usuarioId = $('#historico-id').val();
+        carregarHistorico(usuarioId);
+    });
+
+    function carregarHistorico(usuarioId) {
+        // Total consumido
+        $.ajax({
+            url: BASE_URL + `/api/consumo/${usuarioId}/total`,
+            type: 'GET',
+            success: function(total) {
+                $('#total-consumo').text(`Total consumido: ${total} ml`);
+            },
+            error: function() {
+                $('#total-consumo').text('Erro ao carregar total consumido.');
+            }
+        });
+
+        // Histórico
+        $.ajax({
+            url: BASE_URL + `/api/consumo/${usuarioId}`,
+            type: 'GET',
+            success: function(consumos) {
+                const tbody = $('#historico-table tbody');
+                tbody.empty();
+
+                if (!consumos || consumos.length === 0) {
+                    tbody.append('<tr><td colspan="2">Nenhum consumo registrado.</td></tr>');
+                } else {
+                    consumos.forEach(consumo => {
+                        const data = consumo.data ? new Date(consumo.data).toLocaleString() : '--';
+                        tbody.append(`<tr><td>${data}</td><td>${consumo.quantidade} ml</td></tr>`);
+                    });
+                }
+            },
+            error: function() {
+                $('#historico-table tbody').html('<tr><td colspan="2">Erro ao carregar histórico.</td></tr>');
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

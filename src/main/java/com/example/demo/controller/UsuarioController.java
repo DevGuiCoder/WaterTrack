@@ -6,8 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -23,14 +21,31 @@ public class UsuarioController {
      */
     @PostMapping
     public ResponseEntity<?> criarUsuario(@RequestBody Usuario usuario) {
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("E-mail já cadastrado.");
-        }
+        try {
+            // Validações básicas (redundante se você confiar no setter, mas ajuda a capturar erros antes)
+            if (usuario.getEmail() == null || usuario.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Email não pode ser vazio");
+            }
+            if (usuario.getNome() == null || usuario.getNome().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Nome não pode ser vazio");
+            }
 
-        Usuario salvo = usuarioRepository.save(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+            if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail já cadastrado.");
+            }
+
+            Usuario salvo = usuarioRepository.save(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+
+        } catch (IllegalArgumentException e) {
+            // Captura exceções de validação nos setters
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Log do erro para debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao cadastrar usuário.");
+        }
     }
 
     /**
